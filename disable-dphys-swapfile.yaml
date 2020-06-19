@@ -1,0 +1,23 @@
+# disable-dphys-swapfile.yaml
+---
+- hosts: k3s_rpis
+  remote_user: pi
+  become: yes
+  tasks:
+    - name: Turn off swap now
+      shell: dphys-swapfile swapoff
+
+    - name: Remove the swapfile
+      shell: dphys-swapfile uninstall
+
+    - name: Run "free" command to confirm swap is off
+      shell: free -m
+      register: free
+    
+    - debug: var=free.stdout_lines
+      
+    - name: Stop and disable dphys-swapfile.service
+      service:
+        name: dphys-swapfile.service
+        state: stopped
+        enabled: no

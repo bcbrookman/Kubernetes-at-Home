@@ -1,0 +1,22 @@
+# enable-legacy-iptables.yaml
+---
+- hosts: k3s_rpis
+  remote_user: pi
+  become: yes
+  tasks:
+    - name: Flush all iptables tables (iptables -F)
+      iptables:
+        flush: yes
+      register: flushed
+
+    - name: Set alternative for iptables as iptables-legacy
+      alternatives:
+        name: iptables
+        path: /usr/sbin/iptables-legacy
+      when: flushed.changed
+      
+    - name: Set alternative for ip6tables as ip6tables-legacy
+      alternatives:
+        name: ip6tables
+        path: /usr/sbin/ip6tables-legacy
+      when: flushed.changed

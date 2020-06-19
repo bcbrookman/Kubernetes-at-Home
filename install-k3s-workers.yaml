@@ -1,0 +1,22 @@
+# install-k3s-workers.yaml
+---
+- hosts: k3s_rpis
+  remote_user: pi
+  become: yes
+  tasks:
+    - name: Fetch the master node token
+      fetch:
+        src: /var/lib/rancher/k3s/server/node-token
+        dest: "{{ inventory_hostname_short }}_node-token"
+        flat: yes
+      when: "'k3s_master' in group_names"
+
+    - name: Download K3s install script on worker nodes
+      get_url:
+        url: https://get.k3s.io
+        dest: ~/getk3s.sh
+      when: "'k3s_workers' in group_names"
+
+    - name: Run K3s install script on worker nodes
+      shell: K3S_URL=https://k3s-master-rpi001:6443 K3S_TOKEN={{lookup('file', 'k3s-master-rpi001_node-token')}} /bin/sh  ~/getk3s.sh
+      when: "'k3s_workers' in group_names"

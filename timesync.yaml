@@ -1,0 +1,42 @@
+# timesyncd.yaml
+---
+- hosts: k3s_rpis
+  remote_user: pi
+  become: yes
+  tasks:
+    - name: Set NTP configuration in /etc/systemd/timesyncd.conf
+      lineinfile:
+        path:    /etc/systemd/timesyncd.conf
+        line:    'NTP=192.168.2.1'
+        create:   yes
+        state:    present
+      register: timesyncd_conf
+
+    - name: Start systemd-timesyncd, if not started
+      service:
+        name: systemd-timesyncd
+        state: started
+      register: timesyncd_started
+
+    - name: Restart systemd-timesyncd, if running and timesyncd.conf changed
+      service:
+        name: systemd-timesyncd
+        state: restarted
+      when: timesyncd_started.changed == False and timesyncd_conf.changed
+
+    - name: Enable systemd-timesyncd, if not already enabled
+      service:
+        name: systemd-timesyncd
+        enabled: yes
+
+    - name: Set timezone to America/Los_Angeles
+      timezone:
+        name: America/Los_Angeles
+      register: timezone
+
+    - name: Restart cron if timezone was changed
+      service:
+        name: cron
+        enabled: yes
+        state: restarted
+      when: timezone.changed

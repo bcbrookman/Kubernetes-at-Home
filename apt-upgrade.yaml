@@ -1,0 +1,10 @@
+# apt-upgrade.yaml
+---
+- hosts: k3s_rpis
+  remote_user: pi
+  become: yes
+  tasks:
+    - name: Update apt package lists and upgrade
+      apt:
+        update_cache: yes
+        upgrade: safe

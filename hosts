@@ -1,0 +1,10 @@
+[k3s_rpis]
+k3s-master-rpi001
+k3s-worker-rpi[002:004]
+
+[k3s_master]
+k3s-master-rpi001
+
+[k3s_workers]
+k3s-worker-rpi[002:004]
+
